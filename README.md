@@ -24,3 +24,10 @@ await Future.delayed(const Duration(seconds: 1));
       }),
     );
 ```
+**구현후 사용 예 이미지:**  
+
+<img width="200" alt="4" src="https://github.com/alscks6521/ai-chat-service/assets/112923685/2d11d75a-a5e7-4fc8-acfe-43c292fc3904">
+<img width="200" alt="3" src="https://github.com/alscks6521/ai-chat-service/assets/112923685/04349236-74df-4b8f-a2ae-5e05e981c500">
+<img width="200" alt="2" src="https://github.com/alscks6521/ai-chat-service/assets/112923685/04aa74f4-1669-4758-a09a-c9f100c2ff9c">
+<img width="200" alt="1" src="https://github.com/alscks6521/ai-chat-service/assets/112923685/7512cae1-7e6c-4774-9603-77d1bb4cdece">
+
