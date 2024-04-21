@@ -51,20 +51,32 @@ class _HomePageState extends State<HomePage> {
       body: jsonEncode({
         'model': 'gpt-3.5-turbo',
         'messages': [
-          {'role': 'system', 'content': 'You are a helpful assistant.'},
+          {
+            'role': 'system',
+            'content':
+                '당신은 건강 관련 질문, 사용자의 현재 몸 상태, 소개 등에 대해 답변해야 합니다. 답변은 300자 내외로 간결하되, 어르신이 이해하기 쉽고 예의 바른 언어로 작성해 주세요. 존댓말을 사용하고, 어려운 의학 용어는 평이한 말로 풀어서 설명해 주세요. 만약 질문이 건강, 몸 상태, 소개 등과 관련이 없다면, "죄송하지만, 건강이나 몸 상태, 소개 등에 관해 더 자세히 말씀해 주시면 제가 잘 이해하고 도와드릴 수 있을 것 같습니다."라고 친절하게 답변해 주세요.',
+          },
           {'role': 'user', 'content': message},
         ],
-        'max_tokens': 100,
+        'max_tokens': 300,
         'temperature': 0.7,
         'n': 1,
       }),
     );
 
     if (response.statusCode == 200) {
-      final String reply = jsonDecode(response.body)['choices'][0]['message']['content'];
-      setState(() {
-        _messages.add('GPT: $reply');
-      });
+      final jsonResponse = json.decode(utf8.decode(response.bodyBytes));
+      final String reply = jsonResponse['choices'][0]['message']['content'];
+      if (reply.contains('어르신, 건강이나 몸 상태, 소개 등에 관해 더 자세히 말씀해 주시면 제가 잘 이해하고 도와드릴 수 있을 것 같습니다.')) {
+        setState(() {
+          _messages.add(
+              'GPT: 어르신, 건강이나 몸 상태, 소개 등에 관해 더 자세히 말씀해 주시면 제가 잘 이해하고 도와드릴 수 있을 것 같습니다. 어르신의 상태를 더 잘 파악하고 싶습니다.');
+        });
+      } else {
+        setState(() {
+          _messages.add('GPT: $reply');
+        });
+      }
     } else {
       debugPrint('Request failed with status: ${response.statusCode}.');
       debugPrint('Response body: ${response.body}');
