@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:gptchat/consts.dart';
+import 'package:gptchat/screens/nutritional_dialog.dart';
 import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
@@ -13,25 +14,38 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _textController = TextEditingController();
   final List<String> _messages = [];
+  final List<dynamic> _items = [];
 
-  Widget _buildButton(String label) {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+
+    _recomNutritional();
+  }
+
+  Future _recomNutritional() async {
+    var url =
+        Uri.parse('http://openapi.foodsafetykorea.go.kr/api/$FOOD_API/C003/json/1/10/PRDLST_NM=혈압');
+    var response = await http.get(url);
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      if (data['C003']['row'] != null) {
+        List<dynamic> nutritionList = [];
+
+        for (var item in data['C003']['row']) {
+          nutritionList.add(item);
+          // nutritionList.add(item['PRDLST_NM']);
+          // debugPrint("${item['PRDLST_NM']}");
+        }
+        setState(() {
+          _items.addAll(nutritionList);
+        });
+      } else {
+        debugPrint("관련 영양제 정보가 없습니다.");
+      }
+    } else {
+      debugPrint('영양제 정보를 불러오는데 실패했습니다.');
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -39,14 +53,14 @@ class _HomePageState extends State<HomePage> {
     _textController.clear();
 
     setState(() {
-      _messages.add('User: $message');
+      _messages.add('본인: $message');
     });
     await Future.delayed(const Duration(seconds: 1));
     final response = await http.post(
       Uri.parse('https://api.openai.com/v1/chat/completions'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $OPENAI_API_KEY', // Use your actual API key
+        'Authorization': 'Bearer $OPENAI_API', // Use your actual API key
       },
       body: jsonEncode({
         'model': 'gpt-3.5-turbo',
@@ -70,11 +84,11 @@ class _HomePageState extends State<HomePage> {
       if (reply.contains('어르신, 건강이나 몸 상태, 소개 등에 관해 더 자세히 말씀해 주시면 제가 잘 이해하고 도와드릴 수 있을 것 같습니다.')) {
         setState(() {
           _messages.add(
-              'GPT: 어르신, 건강이나 몸 상태, 소개 등에 관해 더 자세히 말씀해 주시면 제가 잘 이해하고 도와드릴 수 있을 것 같습니다. 어르신의 상태를 더 잘 파악하고 싶습니다.');
+              'AI: 어르신, 건강이나 몸 상태, 소개 등에 관해 더 자세히 말씀해 주시면 제가 잘 이해하고 도와드릴 수 있을 것 같습니다. 어르신의 상태를 더 잘 파악하고 싶습니다.');
         });
       } else {
         setState(() {
-          _messages.add('GPT: $reply');
+          _messages.add('AI: $reply');
         });
       }
     } else {
@@ -185,25 +199,10 @@ class _HomePageState extends State<HomePage> {
                   child: Center(
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: 3,
+                      itemCount: _items.length,
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
-                        return Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 8), // 박스 간의 간격 조정
-                          width: 83, // 박스의 너비 조정
-                          height: 83, // 박스의 높이 조정
-                          decoration: BoxDecoration(
-                            color: Colors.white, // 박스의 배경색
-                            borderRadius: BorderRadius.circular(20), // 박스의 모서리 둥글게 설정
-                          ),
-                          // 박스 안에 들어갈 내용 추가
-                          child: Center(
-                            child: Text(
-                              'Box ${index + 1}',
-                              style: const TextStyle(fontSize: 20),
-                            ),
-                          ),
-                        );
+                        return NutritionalContainer(nutritionalItem: _items[index]);
                       },
                     ),
                   ),
@@ -228,13 +227,13 @@ class _HomePageState extends State<HomePage> {
                           child: TextField(
                             controller: _textController,
                             decoration: const InputDecoration(
-                              hintText: 'Enter a message',
+                              hintText: 'AI에게 건강 상태를 질문해보세요!',
                             ),
                           ),
                         ),
                         ElevatedButton(
                           onPressed: _sendMessage,
-                          child: const Text('Send'),
+                          child: const Text('전송'),
                         ),
                       ],
                     ),
