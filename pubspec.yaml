@@ -37,6 +37,8 @@ dependencies:
   http: ^1.2.1
   chat_gpt_sdk: ^3.0.4
   dash_chat_2: ^0.0.20
+  bubble: ^1.2.1
+  loading_indicator: ^3.1.1
 
 dev_dependencies:
   flutter_test:
