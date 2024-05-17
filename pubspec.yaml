@@ -39,6 +39,7 @@ dependencies:
   dash_chat_2: ^0.0.20
   bubble: ^1.2.1
   loading_indicator: ^3.1.1
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
@@ -61,6 +62,8 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+    - assets/robot.svg
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

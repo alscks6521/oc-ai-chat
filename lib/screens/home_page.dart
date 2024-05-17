@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gptchat/consts.dart';
 import 'package:gptchat/screens/nutritional_dialog.dart';
 import 'package:http/http.dart' as http;
@@ -25,10 +26,11 @@ class _HomePageState extends State<HomePage> {
     _recomNutritional();
   }
 
-  Future _recomNutritional() async {
+  Future<void> _recomNutritional() async {
     var url =
         Uri.parse('http://openapi.foodsafetykorea.go.kr/api/$FOOD_API/C003/json/1/10/PRDLST_NM=혈압');
     var response = await http.get(url);
+
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       if (data['C003']['row'] != null) {
@@ -145,46 +147,55 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              width: 30,
-                              height: 30,
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            const Text(
-                              'Ai 도우미',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17,
-                                color: Color.fromARGB(255, 69, 69, 69),
-                              ),
-                            ),
+                            // Container(
+                            //   decoration: BoxDecoration(
+                            //     color: Colors.blue,
+                            //     borderRadius: BorderRadius.circular(8),
+                            //   ),
+                            //   width: 30,
+                            //   height: 30,
+                            // ),
+                            // const SizedBox(
+                            //   width: 5,
+                            // ),
+                            // const Text(
+                            //   'Ai 도우미',
+                            //   style: TextStyle(
+                            //     fontWeight: FontWeight.bold,
+                            //     fontSize: 17,
+                            //     color: Color.fromARGB(255, 69, 69, 69),
+                            //   ),
+                            // ),
                           ],
                         ),
                       ),
-                      Divider(
-                        color: Colors.grey.withOpacity(0.3),
-                        thickness: 1, // 선의 두께
-                        height: 0,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(
+                      // Divider(
+                      //   color: Colors.grey.withOpacity(0.3),
+                      //   thickness: 1, // 선의 두께
+                      //   height: 0,
+                      // ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 8,
                         ),
                         child: Row(
                           children: [
-                            Text(
+                            SvgPicture.asset(
+                              "./assets/robot.svg",
+                              width: 40.0,
+                              height: 40.0,
+                              colorFilter: const ColorFilter.mode(
+                                Colors.blue, // 원하는 색상으로 변경
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                            const Text(
                               "제가 추천드리는 영양제입니다!",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -225,13 +236,13 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 20),
                 ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.5,
+                    maxHeight: MediaQuery.of(context).size.height * 0.35,
                   ),
                   child: Column(
                     children: [
                       Expanded(
                         child: Container(
-                          color: const Color.fromARGB(255, 219, 219, 219),
+                          color: Colors.red,
                           child: ListView.builder(
                             itemCount: _messages.length,
                             shrinkWrap: true,
@@ -263,7 +274,7 @@ class _HomePageState extends State<HomePage> {
                           child: Bubble(
                             alignment: Alignment.topLeft,
                             nip: BubbleNip.leftTop,
-                            color: Colors.grey[200],
+                            color: Colors.red[200],
                             child: const SizedBox(
                               height: 20,
                               width: 40,
