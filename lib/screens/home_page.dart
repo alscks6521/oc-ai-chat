@@ -1,5 +1,8 @@
+// ignore_for_file: dead_code
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gptchat/consts.dart';
 import 'package:gptchat/screens/nutritional_dialog.dart';
 import 'package:http/http.dart' as http;
@@ -18,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   final List<Map<String, dynamic>> _messages = [];
   final List<dynamic> _items = [];
   bool _isTyping = false;
+  bool isButtonDisabled = false;
 
   @override
   void initState() {
@@ -25,10 +29,13 @@ class _HomePageState extends State<HomePage> {
     _recomNutritional();
   }
 
-  Future _recomNutritional() async {
+  Future<void> _recomNutritional() async {
+    // 증상
     var url =
         Uri.parse('http://openapi.foodsafetykorea.go.kr/api/$FOOD_API/C003/json/1/10/PRDLST_NM=혈압');
+
     var response = await http.get(url);
+
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       if (data['C003']['row'] != null) {
@@ -115,7 +122,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.all(15),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                 const Text(
                   'Ai',
                   style: TextStyle(
-                    fontSize: 60,
+                    fontSize: 45,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -146,50 +153,36 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              width: 30,
-                              height: 30,
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            const Text(
-                              'Ai 도우미',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17,
-                                color: Color.fromARGB(255, 69, 69, 69),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Divider(
-                        color: Colors.grey.withOpacity(0.3),
-                        thickness: 1, // 선의 두께
-                        height: 0,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 8,
                         ),
                         child: Row(
                           children: [
-                            Text(
-                              "제가 추천드리는 영양제입니다!",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17,
-                                color: Color.fromARGB(255, 69, 69, 69),
+                            RichText(
+                              text: TextSpan(
+                                children: [
+                                  WidgetSpan(
+                                    alignment: PlaceholderAlignment.middle,
+                                    child: SvgPicture.asset(
+                                      './assets/robot.svg',
+                                      width: 30.0,
+                                      height: 30.0,
+                                      colorFilter: const ColorFilter.mode(
+                                        Colors.blue, // 원하는 색상으로 변경
+                                        BlendMode.srcIn,
+                                      ),
+                                    ),
+                                  ),
+                                  const TextSpan(
+                                    text: " 제가 추천드리는 영양제입니다!",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17,
+                                      color: Color.fromARGB(255, 69, 69, 69),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -199,39 +192,47 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(
-                  height: 20,
+                  height: 15,
                 ),
-                Container(
-                  height: 130,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFEFEF),
-                    borderRadius: BorderRadius.circular(26),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 25),
-                    child: Center(
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _items.length,
-                        shrinkWrap: true,
+                Stack(
+                  children: [
+                    Container(
+                      height: 110,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFEFEF),
+                        borderRadius: BorderRadius.circular(26),
+                      ),
+                      child: PageView.builder(
+                        itemCount: (_items.length / 3).ceil(), // 카드 당 3개씩
                         itemBuilder: (context, index) {
-                          return NutritionalContainer(nutritionalItem: _items[index]);
+                          int startIndex = index * 3;
+                          int endIndex = (index + 1) * 3;
+                          if (endIndex > _items.length) endIndex = _items.length;
+
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(endIndex - startIndex, (itemIndex) {
+                              return NutritionalContainer(
+                                nutritionalItem: _items[startIndex + itemIndex],
+                              );
+                            }),
+                          );
                         },
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
                 ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.5,
+                    maxHeight: MediaQuery.of(context).size.height * 0.45,
                   ),
                   child: Column(
                     children: [
                       Expanded(
                         child: Container(
-                          color: const Color.fromARGB(255, 219, 219, 219),
+                          color: Colors.transparent,
                           child: ListView.builder(
                             itemCount: _messages.length,
                             shrinkWrap: true,
@@ -242,13 +243,16 @@ class _HomePageState extends State<HomePage> {
                                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                                 child: Bubble(
                                   alignment: isUser ? Alignment.topRight : Alignment.topLeft,
-                                  nip: isUser ? BubbleNip.rightTop : BubbleNip.leftTop,
-                                  color: isUser ? Colors.blue : Colors.grey[200],
+                                  radius: const Radius.circular(26),
+                                  padding: const BubbleEdges.symmetric(horizontal: 30),
+                                  nip: BubbleNip.no, // Tail 디자인 제거
+                                  elevation: 2,
+                                  color: isUser ? const Color(0xFFEFEFEF) : const Color(0xFF276AEE),
                                   child: Text(
                                     message['content'],
                                     style: TextStyle(
                                       fontSize: 18,
-                                      color: isUser ? Colors.white : Colors.black,
+                                      color: isUser ? Colors.black : Colors.white,
                                     ),
                                   ),
                                 ),
@@ -258,42 +262,89 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       if (_isTyping)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Bubble(
-                            alignment: Alignment.topLeft,
-                            nip: BubbleNip.leftTop,
-                            color: Colors.grey[200],
-                            child: const SizedBox(
-                              height: 20,
-                              width: 40,
-                              child: LoadingIndicator(
-                                indicatorType: Indicator.ballPulse,
-                                colors: [
-                                  Colors.blue,
-                                  Color.fromARGB(255, 112, 191, 255),
-                                  Color.fromARGB(255, 179, 221, 255)
-                                ],
-                                strokeWidth: 1,
+                        Container(
+                          color: Colors.transparent,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Bubble(
+                              alignment: Alignment.topLeft,
+                              radius: const Radius.circular(26),
+                              padding: const BubbleEdges.symmetric(horizontal: 30),
+                              nip: BubbleNip.no, // Tail 디자인 제거
+                              color: const Color(0xFF276AEE),
+                              child: const SizedBox(
+                                height: 20,
+                                width: 40,
+                                child: LoadingIndicator(
+                                  indicatorType: Indicator.ballPulse,
+                                  colors: [
+                                    Colors.white,
+                                  ],
+                                  strokeWidth: 1,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _textController,
-                              decoration: const InputDecoration(
-                                hintText: 'AI에게 건강 상태를 질문해보세요!',
+                      Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.3),
+                              spreadRadius: 1,
+                              blurRadius: 7,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                          border: Border.all(
+                            color: const Color(0xFF88B0FF),
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: TextField(
+                                  controller: _textController,
+                                  decoration: const InputDecoration(
+                                    hintText: 'AI에게 건강 상태를 질문해보세요!',
+                                    border: InputBorder.none,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                          ElevatedButton(
-                            onPressed: _sendMessage,
-                            child: const Text('전송'),
-                          ),
-                        ],
+                            Container(
+                              height: 20,
+                              width: 1,
+                              color: const Color(0xFFb5b5b5),
+                            ),
+                            TextButton(
+                              onPressed: isButtonDisabled
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        isButtonDisabled = true;
+                                      });
+                                      _sendMessage();
+                                      Future.delayed(const Duration(seconds: 3), () {
+                                        setState(() {
+                                          isButtonDisabled = false;
+                                        });
+                                      });
+                                    },
+                              child: const Text(
+                                '전송',
+                                style: TextStyle(
+                                  color: Color(0xFF276AEE),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
